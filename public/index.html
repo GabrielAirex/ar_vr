@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Geometric Shapes</title>
+
+    <!-- MediaPipe Hands Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    
+    <!-- A-Frame Library -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    
+    <!-- AR.js Library for Marker Detection -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
+
+    <!-- Link para o arquivo CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="layout">
+            <!-- Sidebar for Random Shapes -->
+            <div class="shape-container">
+                <canvas id="shapeCanvas" width="200" height="768"></canvas>
+            </div>
+
+            <!-- Video and AR scene inside video-container -->
+            <div class="video-container">
+                <!-- Video Feed -->
+                <video id="video" autoplay muted></video>
+
+                <!-- Scene with AR.js inside the video-container -->
+                <a-scene embedded arjs>
+                    <!-- Define the camera feed as the background for the scene -->
+                    <a-camera id="camera" 
+                              position="0 0 0"
+                              look-controls="pointerLockEnabled: true"
+                              visible="false"> <!-- Deixe a câmera invisível -->
+                    </a-camera>
+                
+                    <!-- Hiro Marker -->
+                    <a-marker preset="hiro">
+                        <!-- GLTF Model of a Duck -->
+                        <a-entity id="duckModel" 
+                                  gltf-model="https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/Duck/glTF/Duck.gltf"
+                                  scale="0.5 0.5 0.5" 
+                                  position="0 0 0"
+                                  rotation="0 0 0"
+                                  visible="false"> <!-- Inicialmente invisível -->
+                        </a-entity>
+                    </a-marker>
+                
+                    <!-- AR.js camera entity (hidden camera feed used by AR.js) -->
+                    <a-entity camera visible="false"></a-entity> <!-- Deixe a câmera invisível -->
+
+                    <!-- Cubo 3D que será criado dinamicamente -->
+                    <a-box id="cube" scale="0.5 0.5 0.5" position="2.3 1.6 -6" rotation="0 0 0" color="#4CC3D9" visible="false"></a-box>
+                </a-scene>
+
+                <canvas id="canvas" width="1024" height="768"></canvas>
+            </div>
+        </div>
+
+        <!-- Buttons for Controls -->
+        <div class="controls">
+            <button class="button" onclick="resetShapes()">Reset Shapes</button>
+            <button class="button" onclick="createCube()">Create 3D Shape</button>
+        </div>
+    </div>
+
+    <!-- Script para interação -->
+    <script src="app.js"></script>
+
+    <!-- AR.js Marker Detection with GLTF Model Logic -->
+    <script>
+        const duckModel = document.querySelector('#duckModel');
+        
+        document.querySelector('a-marker').addEventListener('markerFound', function () {
+            console.log('Marcador detectado!');
+            duckModel.setAttribute('visible', 'true'); 
+        });
+
+        document.querySelector('a-marker').addEventListener('markerLost', function () {
+            console.log('Marcador perdido!');
+            duckModel.setAttribute('visible', 'false'); 
+        });
+    </script>
+
+    <!-- Script para criação e rotação do cubo -->
+    <script>
+        const cube = document.querySelector('#cube');
+
+        // Função para criar o cubo e exibi-lo
+        function createCube() {
+            cube.setAttribute('visible', 'true');
+
+            // Cores aleatórias para as faces do cubo
+            const colors = ['#FF0000', '#00FF00', '#0000FF']; // Vermelho, Verde, Azul
+            const faceColors = [];
+
+            // Gerar cores aleatórias para cada face do cubo
+            for (let i = 0; i < 6; i++) {
+                faceColors.push(colors[Math.floor(Math.random() * colors.length)]);
+            }
+
+            // Definindo cores para cada face do cubo usando o material
+            cube.setAttribute('material', `
+                color: ${faceColors[0]};
+                src: #face1;
+                repeat: 1 1;
+                side: double;
+            `);
+            cube.setAttribute('material', 'color: ' + faceColors[1]); // Face 1
+            cube.setAttribute('material', 'color: ' + faceColors[2]); // Face 2
+            cube.setAttribute('material', 'color: ' + faceColors[3]); // Face 3
+            cube.setAttribute('material', 'color: ' + faceColors[4]); // Face 4
+            cube.setAttribute('material', 'color: ' + faceColors[5]); // Face 5
+        }
+
+        // Variáveis para rotação
+        let rotationX = 0;
+        let rotationY = 0;
+
+        // Função para rotacionar o cubo com as teclas direcionais
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'a') {
+                rotationY -= 5;  // Rotaciona à esquerda
+            } else if (event.key === 'd') {
+                rotationY += 5;  // Rotaciona à direita
+            } else if (event.key === 'w') {
+                rotationX -= 5;  // Rotaciona para cima
+            } else if (event.key === 's') {
+                rotationX += 5;  // Rotaciona para baixo
+            }
+            // Atualiza a rotação do cubo
+            cube.setAttribute('rotation', `${rotationX} ${rotationY} 0`);
+        });
+    </script>
+</body>
+</html>
